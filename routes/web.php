@@ -2,7 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\Frontend\Index\IndexController;
+use App\Http\Controllers\App\Frontend\Index\IndexController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -14,9 +15,11 @@ use App\Http\Controllers\Frontend\Index\IndexController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
+Route::get('/', function () {
+    return view('backend.index.index');
+});
 Route::name('main.')->group(function () {
     Route::controller(IndexController::class)->group(function () {
-        Route::get('/', 'index')->middleware('guest')->name('index');
+        //Route::get('/', 'main')->middleware('guest')->name('main');
     });
 });

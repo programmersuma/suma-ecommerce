@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme-mode="dark" data-bs-theme="dark">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,11 +26,11 @@
     <link href="{{ asset('assets/frontend/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
 
 
-    <link href="{{ asset('assets/plugins/global/plugins.dark.bundle.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ asset('assets/css/style.dark.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('assets/frontend/plugins/global/plugins.dark.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('assets/frontend/css/style.dark.bundle.css') }}" rel="stylesheet" type="text/css" />
 </head>
 
-<body id="kt_body" class="header-fixed header-tablet-and-mobile-fixed aside-fixed aside-secondary-disabled dark-mode">
+<body id="kt_body" class="dark-mode header-fixed header-tablet-and-mobile-fixed aside-fixed aside-secondary-disabled dark-mode">
     <!--begin::Main-->
     <!--begin::Root-->
     <div class="d-flex flex-column flex-root">
@@ -189,9 +188,9 @@
     </div>
     <!--end::Scrolltop-->
     <script>
-        var hostUrl = "assets/";
+        var hostUrl = "{{ asset('assets/') }}";
     </script>
-    <!--begin::Global Javascript Bundle(used by all pages)-->
+
     <script src="{{ asset('assets/frontend/plugins/global/plugins.bundle.js') }}"></script>
     <script src="{{ asset('assets/frontend/plugins/custom/leaflet/leaflet.bundle.js') }}"></script>
     <script src="{{ asset('assets/frontend/js/scripts.bundle.js') }}"></script>

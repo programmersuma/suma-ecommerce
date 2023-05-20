@@ -1,1 +1,305 @@
-"use strict";var KTAppEcommerceSalesSaveOrder=function(){var e,t;return{init:function(){(()=>{$("#kt_ecommerce_edit_order_date").flatpickr({altInput:!0,altFormat:"d F, Y",dateFormat:"Y-m-d"});const r=e=>{if(!e.id)return e.text;var t="assets/media/"+e.element.getAttribute("data-kt-select2-country"),r=$("<img>",{class:"rounded-circle me-2",width:26,src:t}),o=$("<span>",{text:" "+e.text});return o.prepend(r),o};$("#kt_ecommerce_edit_order_billing_country").select2({templateResult:function(e){return r(e)}}),$("#kt_ecommerce_edit_order_shipping_country").select2({templateResult:function(e){return r(e)}}),e=document.querySelector("#kt_ecommerce_edit_order_product_table"),t=$(e).DataTable({order:[],scrollY:"400px",scrollCollapse:!0,paging:!1,info:!1,columnDefs:[{orderable:!1,targets:0}]})})(),document.querySelector('[data-kt-ecommerce-edit-order-filter="search"]').addEventListener("keyup",(function(e){t.search(e.target.value).draw()})),(()=>{const e=document.getElementById("kt_ecommerce_edit_order_shipping_form");document.getElementById("same_as_billing").addEventListener("change",(t=>{t.target.checked?e.classList.add("d-none"):e.classList.remove("d-none")}))})(),(()=>{const t=e.querySelectorAll('[type="checkbox"]'),r=document.getElementById("kt_ecommerce_edit_order_selected_products"),o=document.getElementById("kt_ecommerce_edit_order_total_price");t.forEach((e=>{e.addEventListener("change",(t=>{const o=e.closest("tr").querySelector('[data-kt-ecommerce-edit-order-filter="product"]').cloneNode(!0);o.classList.add("border","border-dashed","rounded","p-3","bg-white");const i=o.getAttribute("data-kt-ecommerce-edit-order-id");if(t.target.checked)r.appendChild(o);else{const e=r.querySelector('[data-kt-ecommerce-edit-order-id="'+i+'"]');e&&r.removeChild(e)}d()}))}));const d=()=>{const e=r.querySelector("span"),t=r.querySelectorAll('[data-kt-ecommerce-edit-order-filter="product"]');t.length<1?(e.classList.remove("d-none"),o.innerText="0.00"):(e.classList.add("d-none"),i(t))},i=e=>{let t=0;e.forEach((e=>{const r=parseFloat(e.querySelector('[data-kt-ecommerce-edit-order-filter="price"]').innerText);t=parseFloat(t+r)})),o.innerText=t.toFixed(2)}})(),(()=>{let e;const t=document.getElementById("kt_ecommerce_edit_order_form"),r=document.getElementById("kt_ecommerce_edit_order_submit");e=FormValidation.formValidation(t,{fields:{payment_method:{validators:{notEmpty:{message:"Payment method is required"}}},shipping_method:{validators:{notEmpty:{message:"Shipping method is required"}}},order_date:{validators:{notEmpty:{message:"Order date is required"}}},billing_order_address_1:{validators:{notEmpty:{message:"Address line 1 is required"}}},billing_order_postcode:{validators:{notEmpty:{message:"Postcode is required"}}},billing_order_state:{validators:{notEmpty:{message:"State is required"}}},billing_order_country:{validators:{notEmpty:{message:"Country is required"}}}},plugins:{trigger:new FormValidation.plugins.Trigger,bootstrap:new FormValidation.plugins.Bootstrap5({rowSelector:".fv-row",eleInvalidClass:"",eleValidClass:""})}}),r.addEventListener("click",(o=>{o.preventDefault(),e&&e.validate().then((function(e){console.log("validated!"),"Valid"==e?(r.setAttribute("data-kt-indicator","on"),r.disabled=!0,setTimeout((function(){r.removeAttribute("data-kt-indicator"),Swal.fire({text:"Form has been successfully submitted!",icon:"success",buttonsStyling:!1,confirmButtonText:"Ok, got it!",customClass:{confirmButton:"btn btn-primary"}}).then((function(e){e.isConfirmed&&(r.disabled=!1,window.location=t.getAttribute("data-kt-redirect"))}))}),2e3)):Swal.fire({html:"Sorry, looks like there are some errors detected, please try again.",icon:"error",buttonsStyling:!1,confirmButtonText:"Ok, got it!",customClass:{confirmButton:"btn btn-primary"}})}))}))})()}}}();KTUtil.onDOMContentLoaded((function(){KTAppEcommerceSalesSaveOrder.init()}));
+"use strict";
+
+// Class definition
+var KTAppEcommerceSalesSaveOrder = function () {
+    // Shared variables
+    var table;
+    var datatable;
+
+    // Private functions
+    const initSaveOrder = () => {
+        // Init flatpickr
+        $('#kt_ecommerce_edit_order_date').flatpickr({
+            altInput: true,
+            altFormat: "d F, Y",
+            dateFormat: "Y-m-d",
+        });
+
+        // Init select2 country options
+        // Format options
+        const format = (item) => {
+            if (!item.id) {
+                return item.text;
+            }
+
+            var url = 'assets/media/' + item.element.getAttribute('data-kt-select2-country');
+            var img = $("<img>", {
+                class: "rounded-circle me-2",
+                width: 26,
+                src: url
+            });
+            var span = $("<span>", {
+                text: " " + item.text
+            });
+            span.prepend(img);
+            return span;
+        }
+
+        // Init Select2 --- more info: https://select2.org/        
+        $('#kt_ecommerce_edit_order_billing_country').select2({
+            templateResult: function (item) {
+                return format(item);
+            }
+        });
+
+        $('#kt_ecommerce_edit_order_shipping_country').select2({
+            templateResult: function (item) {
+                return format(item);
+            }
+        });
+
+        // Init datatable --- more info on datatables: https://datatables.net/manual/
+        table = document.querySelector('#kt_ecommerce_edit_order_product_table');
+        datatable = $(table).DataTable({
+            'order': [],
+            "scrollY": "400px",
+            "scrollCollapse": true,
+            "paging": false,
+            "info": false,
+            'columnDefs': [
+                { orderable: false, targets: 0 }, // Disable ordering on column 0 (checkbox)
+            ]
+        });
+    }
+
+    // Search Datatable --- official docs reference: https://datatables.net/reference/api/search()
+    var handleSearchDatatable = () => {
+        const filterSearch = document.querySelector('[data-kt-ecommerce-edit-order-filter="search"]');
+        filterSearch.addEventListener('keyup', function (e) {
+            datatable.search(e.target.value).draw();
+        });
+    }
+
+    // Handle shipping form
+    const handleShippingForm = () => {
+        // Select elements
+        const element = document.getElementById('kt_ecommerce_edit_order_shipping_form');
+        const checkbox = document.getElementById('same_as_billing');
+
+        // Show/hide shipping form
+        checkbox.addEventListener('change', e => {
+            if (e.target.checked) {
+                element.classList.add('d-none');
+            } else {
+                element.classList.remove('d-none');
+            }
+        });
+    }
+
+    // Handle product select
+    const handleProductSelect = () => {
+        // Define variables
+        const checkboxes = table.querySelectorAll('[type="checkbox"]');
+        const target = document.getElementById('kt_ecommerce_edit_order_selected_products');
+        const totalPrice = document.getElementById('kt_ecommerce_edit_order_total_price');
+
+        // Loop through all checked products
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', e => {
+                const parent = checkbox.closest('tr');
+                const product = parent.querySelector('[data-kt-ecommerce-edit-order-filter="product"]').cloneNode(true);
+                const additionalClasses = ['border', 'border-dashed', 'rounded', 'p-3', 'bg-white'];
+                product.classList.add(...additionalClasses);
+                const productId = product.getAttribute('data-kt-ecommerce-edit-order-id');
+
+                if (e.target.checked) {
+                    // Add product to selected product wrapper
+                    target.appendChild(product);
+                } else {
+                    // Remove product from selected product wrapper
+                    const selectedProduct = target.querySelector('[data-kt-ecommerce-edit-order-id="' + productId + '"]');
+                    if (selectedProduct) {
+                        target.removeChild(selectedProduct);
+                    }
+                }
+
+                // Trigger empty message logic
+                detectEmpty();
+            });
+        });
+
+        // Handle empty list message
+        const detectEmpty = () => {
+            // Select elements
+            const message = target.querySelector('span');
+            const products = target.querySelectorAll('[data-kt-ecommerce-edit-order-filter="product"]');
+
+            // Detect if element is empty
+            if (products.length < 1) {
+                // Show message
+                message.classList.remove('d-none');
+
+                // Reset price
+                totalPrice.innerText = '0.00';
+            } else {
+                // Hide message
+                message.classList.add('d-none');
+
+                // Calculate price
+                calculateTotal(products);
+            }
+        }
+
+        // Calculate total cost
+        const calculateTotal = (products) => {
+            let countPrice = 0;
+
+            // Loop through all selected prodcucts
+            products.forEach(product => {
+                // Get product price
+                const price = parseFloat(product.querySelector('[data-kt-ecommerce-edit-order-filter="price"]').innerText);
+
+                // Add to total
+                countPrice = parseFloat(countPrice + price);
+            });
+
+            // Update total price
+            totalPrice.innerText = countPrice.toFixed(2);
+        }
+    }
+
+    // Submit form handler
+    const handleSubmit = () => {
+        // Define variables
+        let validator;
+
+        // Get elements
+        const form = document.getElementById('kt_ecommerce_edit_order_form');
+        const submitButton = document.getElementById('kt_ecommerce_edit_order_submit');
+
+        // Init form validation rules. For more info check the FormValidation plugin's official documentation:https://formvalidation.io/
+        validator = FormValidation.formValidation(
+            form,
+            {
+                fields: {
+                    'payment_method': {
+                        validators: {
+                            notEmpty: {
+                                message: 'Payment method is required'
+                            }
+                        }
+                    },
+                    'shipping_method': {
+                        validators: {
+                            notEmpty: {
+                                message: 'Shipping method is required'
+                            }
+                        }
+                    },
+                    'order_date': {
+                        validators: {
+                            notEmpty: {
+                                message: 'Order date is required'
+                            }
+                        }
+                    },
+                    'billing_order_address_1': {
+                        validators: {
+                            notEmpty: {
+                                message: 'Address line 1 is required'
+                            }
+                        }
+                    },
+                    'billing_order_postcode': {
+                        validators: {
+                            notEmpty: {
+                                message: 'Postcode is required'
+                            }
+                        }
+                    },
+                    'billing_order_state': {
+                        validators: {
+                            notEmpty: {
+                                message: 'State is required'
+                            }
+                        }
+                    },
+                    'billing_order_country': {
+                        validators: {
+                            notEmpty: {
+                                message: 'Country is required'
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    trigger: new FormValidation.plugins.Trigger(),
+                    bootstrap: new FormValidation.plugins.Bootstrap5({
+                        rowSelector: '.fv-row',
+                        eleInvalidClass: '',
+                        eleValidClass: ''
+                    })
+                }
+            }
+        );
+
+        // Handle submit button
+        submitButton.addEventListener('click', e => {
+            e.preventDefault();
+
+            // Validate form before submit
+            if (validator) {
+                validator.validate().then(function (status) {
+                    console.log('validated!');
+
+                    if (status == 'Valid') {
+                        submitButton.setAttribute('data-kt-indicator', 'on');
+
+                        // Disable submit button whilst loading
+                        submitButton.disabled = true;
+
+                        setTimeout(function () {
+                            submitButton.removeAttribute('data-kt-indicator');
+
+                            Swal.fire({
+                                text: "Form has been successfully submitted!",
+                                icon: "success",
+                                buttonsStyling: false,
+                                confirmButtonText: "Ok, got it!",
+                                customClass: {
+                                    confirmButton: "btn btn-primary"
+                                }
+                            }).then(function (result) {
+                                if (result.isConfirmed) {
+                                    // Enable submit button after loading
+                                    submitButton.disabled = false;
+
+                                    // Redirect to customers list page
+                                    window.location = form.getAttribute("data-kt-redirect");
+                                }
+                            });
+                        }, 2000);
+                    } else {
+                        Swal.fire({
+                            html: "Sorry, looks like there are some errors detected, please try again.",
+                            icon: "error",
+                            buttonsStyling: false,
+                            confirmButtonText: "Ok, got it!",
+                            customClass: {
+                                confirmButton: "btn btn-primary"
+                            }
+                        });
+                    }
+                });
+            }
+        })
+    }
+
+
+    // Public methods
+    return {
+        init: function () {
+
+            initSaveOrder();
+            handleSearchDatatable();
+            handleShippingForm();
+            handleProductSelect();
+            handleSubmit();
+        }
+    };
+}();
+
+// On document ready
+KTUtil.onDOMContentLoaded(function () {
+    KTAppEcommerceSalesSaveOrder.init();
+});
